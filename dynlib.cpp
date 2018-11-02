@@ -4,8 +4,6 @@
  *  dynamic library data in PS4 ELF's.
  */
 
-#define USE_STANDARD_FILE_FUNCTIONS	// for tinyxml...
-
 #include <ida.hpp>
 #include <idp.hpp>
 #include <name.hpp>
@@ -19,9 +17,10 @@
 #include <pro.h>
 
 #include <stddef.h>
+#include <stdint.h>
 #include <ctime>    // for timer
 
-#include "TinyXML\tinyxml.h"
+#include "TinyXML/tinyxml.h"
 #include "dynlib.h"
 
 /* Debug print to log file */
@@ -35,9 +34,9 @@ static FILE *logFile  = NULL;
  * Only print to msg if debug is enabled.
  */
 #if DEBUG_MSG
-#define lmdprint(fmt, ...)  lmprint(fmt, __VA_ARGS__)
+#define lmdprint(fmt, ...)  lmprint(fmt, ##__VA_ARGS__)
 #else
-#define lmdprint(fmt, ...)  lprint(fmt "\n", __VA_ARGS__)
+#define lmdprint(fmt, ...)  lprint(fmt "\n", ##__VA_ARGS__)
 #endif
 
 /*
@@ -45,15 +44,15 @@ static FILE *logFile  = NULL;
  */
 #define lmprint(fmt, ...)    \
 do {        \
-    lprint(fmt "\n", __VA_ARGS__);    \
-    msg(fmt "\n", __VA_ARGS__);     \
+    lprint(fmt "\n", ##__VA_ARGS__);    \
+    msg(fmt "\n", ##__VA_ARGS__);     \
 } while (0)
 
 /*
  * Print to log only.
  */
 static inline void 
-lprint(char *format, ...)
+lprint(const char *format, ...)
 {
 #if DEV_LOG
     if ( logFile ) {
@@ -280,7 +279,7 @@ db_entry_by_obf (TiXmlDocument *db, const char *obf, const char *entry) {
                 if ( memcmp(obf, obfstr, 11) == 0 )
                     if ( const char *sym = e->Attribute(entry) )
                         return sym;
-        } while ( e = e->NextSiblingElement() );
+        } while ( (e = e->NextSiblingElement()) );
     }
 
     return NULL;
@@ -301,9 +300,9 @@ int decode_base64 (const char *str, int *a2)
     v3 = 0LL;
     do {
       v5 = v3 << 6;
-      if ( (unsigned __int8)(chr - 0x61) > 0x19u ) {
-        if ( (unsigned __int8)(chr - 0x41) > 0x19u ) {
-          if ( (unsigned __int8)(chr - 0x30) > 9u ) {
+      if ( (uint8_t)(chr - 0x61) > 0x19u ) {
+        if ( (uint8_t)(chr - 0x41) > 0x19u ) {
+          if ( (uint8_t)(chr - 0x30) > 9u ) {
             if ( chr == '-' )
               v3 = v5 | 0x3F;
             else {
